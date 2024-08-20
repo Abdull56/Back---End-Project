@@ -1,74 +1,20 @@
 const express = require("express");
-const BookValidationMW = require("../validators/books.validator");
-const bookModel = require("../models/books");
+const {
+  BookAddValidationMW,
+  BookUpdateValidationMW,
+} = require("../validators/books.validator");
+const bookControllers = require("../controllers/books.controllers");
 
 const bookRouter = express.Router();
 
-bookRouter.get("/", (req, res) => {
-  bookModel
-    .find()
-    .then((books) => {
-      res.send(books);
-    })
-    .catch((err) => {
-      console.log(err);
-      res.send(err);
-    });
-});
+bookRouter.get("/", bookControllers.getAllBooks);
 
-bookRouter.get("/:id", (req, res) => {
-  const id = req.params.id;
-  bookModel
-    .findById(id)
-    .then((book) => {
-      res.status(200).send(book);
-    })
-    .catch((err) => {
-      console.log(err);
-      res.status(404).send(err);
-    });
-});
+bookRouter.get("/:id", bookControllers.getBooksById);
 
-bookRouter.post("/", BookValidationMW, (req, res) => {
-  const book = req.body;
-  book.lastUpdateAt = new Date(); // set the lastUpdateAt to the current date
-  bookModel
-    .create(book)
-    .then((book) => {
-      res.status(201).send(book);
-    })
-    .catch((err) => {
-      console.log(err);
-      res.status(500).send(err);
-    });
-});
+bookRouter.post("/", BookAddValidationMW, bookControllers.addBooks);
 
-bookRouter.put("/:id", (req, res) => {
-  const id = req.params.id;
-  const book = req.body;
-  book.lastUpdateAt = new Date(); // set the lastUpdateAt to the current date
-  bookModel
-    .findByIdAndUpdate(id, book, { new: true })
-    .then((newBook) => {
-      res.status(200).send(newBook);
-    })
-    .catch((err) => {
-      console.log(err);
-      res.status(500).send(err);
-    });
-});
+bookRouter.put("/:id", BookUpdateValidationMW, bookControllers.updateBooks);
 
-bookRouter.delete("/:id", (req, res) => {
-  const id = req.params.id;
-  bookModel
-    .findByIdAndRemove(id)
-    .then((book) => {
-      res.status(200).send(book);
-    })
-    .catch((err) => {
-      console.log(err);
-      res.status(500).send(err);
-    });
-});
+bookRouter.delete("/:id", bookControllers.deleteBooks);
 
 module.exports = bookRouter;
